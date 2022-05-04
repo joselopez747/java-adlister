@@ -1,44 +1,36 @@
-import com.mysql.cj.jdbc.Driver;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JDBCTest {
-    //Test of Java Database Connectivity
-    // we are going to need:
-    // 1.Connection object,
-    // 2.Statement object,
-    // 3.ResultSet object
+import com.mysql.cj.jdbc.Driver;
 
-    private static List<String> getAuthorNames(){
+public class JDBCTest {
+    private static List<String> getAuthorNames() {
         List<String> authorNames = new ArrayList<>();
-        try{
-            Config config = new Config();
-            //Get the driver into our app
-            DriverManager.registerDriver(new Driver(){});
-            //Create the connection object
-            Connection connection = DriverManager.getConnection(
-                    config.getUrl(),
-                    config.getUser(),
-                    config.getPassword()
-            );
-            //Create the Statement object
+        try {
+            // Establish connection
+            DriverManager.registerDriver(new Driver());
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/codeup_test_db?allowPublicKeyRetrieval=true&useSSL=false",
+                    "codeup_test_user",
+                    "codeup");
+
+            // Create statement object
             Statement statement = connection.createStatement();
-            //Execute statement and get results
+            // Execute statement
             ResultSet rs = statement.executeQuery("SELECT author_name FROM codeup_test_db.authors");
             while (rs.next()){
                 authorNames.add(rs.getString("author_name"));
             }
 
-        } catch(SQLException sqle){
+        } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
         return authorNames;
     }
-    public static void main(String[] args){
-        List<String> authorNames = getAuthorNames();
-        for (String name : authorNames){
+
+    public static void main(String[] args) {
+        List<String> authors = getAuthorNames();
+        for(String name : authors){
             System.out.println(name);
         }
     }

@@ -1,3 +1,6 @@
+public static Authors authorsDao;
+public static Quotes quotesDao;
+
 public class DaoFactory {
     private static Ads adsDao;
 
