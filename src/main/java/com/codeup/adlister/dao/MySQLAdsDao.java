@@ -1,12 +1,12 @@
 package com.codeup.adlister.dao;
 
+import java.sql.*;
+
+import com.codeup.adlister.dao.Ads;
+import com.codeup.adlister.dao.Config;
 import com.codeup.adlister.models.Ad;
 import com.mysql.cj.jdbc.Driver;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,61 +17,53 @@ public class MySQLAdsDao implements Ads {
         try {
             DriverManager.registerDriver(new Driver());
             connection = DriverManager.getConnection(
-                config.getUrl(),
-                config.getUser(),
-                config.getPassword()
+                    config.getAdListerUrl(),
+                    config.getAdListerUser(),
+                    config.getPassword()
             );
         } catch (SQLException e) {
             throw new RuntimeException("Error connecting to the database!", e);
         }
     }
 
+
     @Override
     public List<Ad> all() {
-        Statement stmt = null;
+        List<Ad> ads = new ArrayList<>();
         try {
-            stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM ads");
-            return createAdsFromResults(rs);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error retrieving all ads.", e);
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT * FROM ads");
+            while (rs.next()){
+                Ad ad = new Ad(
+                        rs.getLong("id"),
+                        rs.getLong("user_id"),
+                        rs.getString("title"),
+                        rs.getString("description")
+                );
+                ads.add(ad);
+            }
+        } catch (SQLException sqle){
+            throw new RuntimeException("error connecting to db", sqle);
         }
+
+        return ads;
     }
 
     @Override
     public Long insert(Ad ad) {
+        String title = ad.getTitle();
+        String description = ad.getDescription();
+        String query = "INSERT INTO ads (user_id, title, description) VALUES (1, '" + title + "', '" + description + "')";
         try {
-            Statement stmt = connection.createStatement();
-            stmt.executeUpdate(createInsertQuery(ad), Statement.RETURN_GENERATED_KEYS);
-            ResultSet rs = stmt.getGeneratedKeys();
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+            ResultSet rs = statement.getGeneratedKeys();
             rs.next();
-            return rs.getLong(1);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error creating a new ad.", e);
+            long key = rs.getLong(1);
+            System.out.println("The key of the new insert is: " + key);
+            return key;
+        } catch (SQLException sqle){
+            throw new RuntimeException("error connecting to db", sqle);
         }
-    }
-
-    private String createInsertQuery(Ad ad) {
-        return "INSERT INTO ads(user_id, title, description) VALUES "
-            + "(" + ad.getUserId() + ", "
-            + "'" + ad.getTitle() +"', "
-            + "'" + ad.getDescription() + "')";
-    }
-
-    private Ad extractAd(ResultSet rs) throws SQLException {
-        return new Ad(
-            rs.getLong("id"),
-            rs.getLong("user_id"),
-            rs.getString("title"),
-            rs.getString("description")
-        );
-    }
-
-    private List<Ad> createAdsFromResults(ResultSet rs) throws SQLException {
-        List<Ad> ads = new ArrayList<>();
-        while (rs.next()) {
-            ads.add(extractAd(rs));
-        }
-        return ads;
     }
 }

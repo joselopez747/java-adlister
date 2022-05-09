@@ -1,22 +1,27 @@
-USE adlister_db;
+CREATE DATABASE adlister_db;
+CREATE USER 'adlister_db_user'@'localhost' IDENTIFIED BY 'codeup';
+GRANT ALL ON adlister_db.* TO 'adlister_db_user'@'localhost';
 
 DROP TABLE IF EXISTS ads;
-DROP TABLE IF EXISTS users;
-
-CREATE TABLE users (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    username VARCHAR(240) NOT NULL,
-    email VARCHAR(240) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    PRIMARY KEY (id)
-);
-
 CREATE TABLE ads (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    user_id INT UNSIGNED NOT NULL,
-    title VARCHAR(240) NOT NULL,
-    description TEXT NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (user_id) REFERENCES users(id)
-        ON DELETE CASCADE
+                     id int unsigned NOT NULL AUTO_INCREMENT,
+                     user_id int unsigned NOT NULL,
+                     title varchar(240) NOT NULL,
+                     description text NOT NULL,
+                     PRIMARY KEY (id),
+                     CONSTRAINT ads_user_id_fk FOREIGN KEY (user_id) REFERENCES users (id)
 );
+
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+                       id int unsigned NOT NULL AUTO_INCREMENT,
+                       username varchar(50) NOT NULL,
+                       email varchar(60) NOT NULL,
+                       password varchar(255) NOT NULL,
+                       PRIMARY KEY (id)
+);
+
+USE adlister_db;
+
+INSERT INTO users (username, email, password) VALUES ('admin', 'admin@admin.net', 'password');
+SELECT id FROM users WHERE username = 'admin';
